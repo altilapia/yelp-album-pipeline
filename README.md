@@ -96,7 +96,7 @@ SCHEDULE_TIME=03:00
 
 ---
 
-## 4 — Run locally with the following commandws 
+## 4 — Run locally with the following commands 
 
 ```bash
 conda activate yelp_tracker (name of your conda env)
@@ -110,7 +110,7 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 
 ---
 
-## Things to Know
+## Things to know
 
 - Multiple albums can be uploaded, one at a time
 - The Google Sheet will retain its information regardless of whether the application is open
@@ -118,7 +118,7 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 - The header column will persist with each link upload and file erasure 
 - Duplicate businesses will be ignored
 
-## Google Sheet Contents
+## Google sheet contents
 
 **name** - Business name  
 **biz_url** - Business Yelp Link  
