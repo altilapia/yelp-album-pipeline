@@ -2,6 +2,8 @@
 
 Scrapes all businesses from a public Yelp album (collection) and writes them to a Google Sheet. A small FastAPI web app lets you add albums through a browser form.
 
+<img src="image.png" alt="Sample of Google Sheet" width=500>
+
 ## How it works
 
 ```
@@ -29,7 +31,7 @@ Fields written per business: `name`, `biz_url`, `category`, `rating`, `review_co
 ### 1a. Enable the Google Sheets API
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project (or pick an existing one).
-2. In the left sidebar → **APIs & Services → Library**.
+2. Click **APIs & Services → Library**.
 3. Search for **Google Sheets API** and click **Enable**.
 
 ### 1b. Create a service account (free)
@@ -94,10 +96,10 @@ SCHEDULE_TIME=03:00
 
 ---
 
-## 4 — Run locally
+## 4 — Run locally with the following commandws 
 
 ```bash
-conda activate yelp_tracker
+conda activate yelp_tracker (name of your conda env)
 uvicorn app.main:app --reload
 ```
 
@@ -105,20 +107,28 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium window will open, scroll through the album, then close. Results land in your Google Sheet within a minute or two depending on how many businesses the album has.
 
-The daily scheduler starts automatically with the app and fires at `SCHEDULE_TIME` for every URL in the tracked list.
 
 ---
 
-## 5 — Run the tests
+## Things to Know
 
-```bash
-conda activate yelp_tracker
-pytest tests/ -v
-```
+- Multiple albums can be uploaded, one at a time
+- The Google Sheet will retain its information regardless of whether the application is open
+- If you would like to repopulate the sheet, erase the contents and re-upload album links
+- The header column will persist with each link upload and file erasure 
+- Duplicate businesses will be ignored
 
-All tests run offline — the scraper, sheets uploader, and scheduler are mocked. The parser tests run against a real saved HTML fixture (`tests/fixtures/sample_album.html`).
+## Google Sheet Contents
 
----
+**name** - Business name
+**biz_url** - Business Yelp Link
+**category** - Business 
+**rating** - Average star rating (rounded to nearest 0.5 interval)
+**review_count** - Number of business reviews
+**price** - Dollar signs indicating expense rating $$
+**city** - City of business
+**state** - State of business 
+
 
 ## Project layout
 
