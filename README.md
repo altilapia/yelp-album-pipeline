@@ -168,6 +168,6 @@ yelp-album-tracker/
 
 ## Yelp scraping notes
 
-- Albums use infinite scroll — the scraper scrolls until the business count stops growing for 3 consecutive passes.
+- Albums use infinite scroll. To ensure full search of each album, the scraper scrolls until the business count stops growing for 3 consecutive passes.
 - The browser launches **non-headless** by default to reduce bot-detection risk. Expect occasional CAPTCHAs on large or frequently-scraped albums.
 - If Yelp starts blocking: try adding a longer `scroll_pause` in `scraper.py`, or look into [playwright-stealth](https://github.com/AtuboDad/playwright_stealth) and residential proxies as escalation options.
