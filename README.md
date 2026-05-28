@@ -1,6 +1,6 @@
 # Yelp Album Tracker
 
-Scrapes all businesses from a public Yelp album (collection), writes them to a Google Sheet, and re-runs daily on a schedule. A small FastAPI web app lets you add albums through a browser form.
+Scrapes all businesses from a public Yelp album (collection) and writes them to a Google Sheet. A small FastAPI web app lets you add albums through a browser form.
 
 ## How it works
 
@@ -32,22 +32,22 @@ Fields written per business: `name`, `biz_url`, `category`, `rating`, `review_co
 2. In the left sidebar → **APIs & Services → Library**.
 3. Search for **Google Sheets API** and click **Enable**.
 
-### 1b. Create a service account
+### 1b. Create a service account (free)
 
 1. **APIs & Services → Credentials → Create Credentials → Service account**.
 2. Give it any name (e.g. `yelp-tracker`), click **Done**.
 3. Click the new service account → **Keys → Add Key → Create new key → JSON**.
 4. Save the downloaded file to `credentials/service-account.json` inside this repo.
    ```
-   yelp-album-tracker/
+   yelp-tracker/
    └── credentials/
        └── service-account.json   ← here
    ```
    This path is in `.gitignore` and will never be committed.
 
-### 1c. Create the Google Sheet and share it
+### 1c. Create a Google Sheet and share it
 
-1. Create a new Google Sheet (or use an existing one).
+1. Create a new Google Sheet (using your personal email or any other email besides the service account).
 2. Copy the **Sheet ID** from its URL:
    ```
    https://docs.google.com/spreadsheets/d/SHEET_ID_IS_HERE/edit
@@ -57,7 +57,7 @@ Fields written per business: `name`, `biz_url`, `category`, `rating`, `review_co
 
 ---
 
-## 2 — Conda environment
+## 2 — Create a conda environment
 
 ```bash
 conda create -n yelp_tracker python=3.11
@@ -116,7 +116,7 @@ conda activate yelp_tracker
 pytest tests/ -v
 ```
 
-All 57 tests run offline — the scraper, sheets uploader, and scheduler are mocked. The parser tests run against a real saved HTML fixture (`tests/fixtures/sample_album.html`).
+All tests run offline — the scraper, sheets uploader, and scheduler are mocked. The parser tests run against a real saved HTML fixture (`tests/fixtures/sample_album.html`).
 
 ---
 
