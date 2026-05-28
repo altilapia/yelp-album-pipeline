@@ -1,8 +1,27 @@
 # Yelp Album Tracker
 
-Scrapes all businesses from a public Yelp album (collection) and writes them to a Google Sheet. A small FastAPI web app lets you add albums through a browser form.
+Turn your Yelp collections into a live Google Sheet. Paste in a public album URL and the tool will scrape each business, making it easier to keep track of places you want to visit next.
 
 <img src="app.png" alt="Sample of Google Sheet" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
+
+## Things to know
+
+- The Google Sheet will retain its information regardless of whether the application is open
+- Column headers persist across uploads and deletions
+- Duplicate businesses are automatically ignored
+- Entire albums can be refreshed or removed directly within the web interface
+
+## Google sheet columns
+| Column | Description |
+|---|---|
+| **name** | Business name |
+| **biz_url** | Yelp business link |
+| **category** | Business category |
+| **rating** | Average star rating (rounded to nearest 0.5) |
+| **review_count** | Total number of reviews |
+| **price** | Price range (e.g. $$) |
+| **city** | City |
+| **state** | State |
 
 ## How it works
 
@@ -13,8 +32,6 @@ POST /scrape  →  Playwright (scroll to load all)
 
 APScheduler   →  runs every tracked album daily at SCHEDULE_TIME
 ```
-
-Fields written per business: `name`, `biz_url`, `category`, `rating`, `review_count`, `price`, `neighborhood`, `first_seen`, `last_seen`.
 
 ---
 
@@ -109,25 +126,6 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 
 
 ---
-
-## Things to know
-
-- Multiple albums can be uploaded, one at a time
-- The Google Sheet will retain its information regardless of whether the application is open
-- If you would like to repopulate the sheet, erase the contents and re-upload album links
-- The header column will persist with each link upload and file erasure 
-- Duplicate businesses will be ignored
-
-## Google sheet contents
-
-**name** - Business name  
-**biz_url** - Business Yelp Link  
-**category** - Business  
-**rating** - Average star rating (rounded to nearest 0.5 interval)  
-**review_count** - Number of business reviews  
-**price** - Dollar signs indicating expense rating $$  
-**city** - City of business  
-**state** - State of business  
 
 
 ## Project layout
