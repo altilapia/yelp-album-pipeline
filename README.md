@@ -2,7 +2,7 @@
 
 Scrapes all businesses from a public Yelp album (collection) and writes them to a Google Sheet. A small FastAPI web app lets you add albums through a browser form.
 
-<img src="image.png" alt="Sample of Google Sheet" width=500>
+<img src="app.png" alt="Sample of Google Sheet" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
 
 ## How it works
 
