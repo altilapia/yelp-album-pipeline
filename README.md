@@ -120,14 +120,14 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 
 ## Google Sheet Contents
 
-**name** - Business name
-**biz_url** - Business Yelp Link
-**category** - Business 
-**rating** - Average star rating (rounded to nearest 0.5 interval)
-**review_count** - Number of business reviews
-**price** - Dollar signs indicating expense rating $$
-**city** - City of business
-**state** - State of business 
+**name** - Business name  
+**biz_url** - Business Yelp Link  
+**category** - Business  
+**rating** - Average star rating (rounded to nearest 0.5 interval)  
+**review_count** - Number of business reviews  
+**price** - Dollar signs indicating expense rating $$  
+**city** - City of business  
+**state** - State of business  
 
 
 ## Project layout
