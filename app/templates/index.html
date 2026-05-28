@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yelp Album Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; margin-bottom: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: .05em; }
+    .card { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1); max-width: 680px; }
+    .row { display: flex; gap: .75rem; }
+    input[type="url"] { flex: 1; padding: .5rem .75rem; border: 1px solid #ccc;
+                        border-radius: 6px; font-size: 1rem; }
+    button { padding: .5rem 1.25rem; background: #d32323; color: #fff; border: none;
+             border-radius: 6px; font-size: 1rem; cursor: pointer; white-space: nowrap; }
+    button:hover { background: #b71c1c; }
+    ul { list-style: none; }
+    li { padding: .5rem 0; border-bottom: 1px solid #eee; word-break: break-all; }
+    li:last-child { border-bottom: none; }
+    a { color: #d32323; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .empty { color: #999; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Yelp Album Tracker</h1>
+
+  <div class="card">
+    <h2>Scrape an album</h2>
+    <form method="post" action="/scrape">
+      <div class="row">
+        <input type="url" name="yelp_url" placeholder="https://www.yelp.com/collection/…" required>
+        <button type="submit">Scrape &amp; sync</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Tracked albums</h2>
+    {% if albums %}
+    <ul>
+      {% for url in albums %}
+      <li><a href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a></li>
+      {% endfor %}
+    </ul>
+    <form method="post" action="/scrape-all" style="margin-top:1rem;">
+      <button type="submit">Refresh all</button>
+    </form>
+    {% else %}
+    <p class="empty">No albums tracked yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

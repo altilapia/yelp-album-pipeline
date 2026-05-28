@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python -c \"import fastapi, jinja2, multipart; print\\('ok'\\)\" 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "PowerShell(& \"C:\\\\Users\\\\atall\\\\miniforge3\\\\envs\\\\yelp_tracker\\\\python.exe\" -m pytest tests/test_sheets.py -q 2>&1)"
+    ]
+  }
+}
