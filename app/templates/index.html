@@ -4,22 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yelp Album Tracker</title>
+  {% if albums | selectattr("name", "equalto", "") | list %}
+  <meta http-equiv="refresh" content="3">
+  {% endif %}
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem; }
     h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
     h2 { font-size: 1rem; margin-bottom: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: .05em; }
     .card { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,.1); max-width: 680px; }
+            box-shadow: 0 1px 3px rgba(0,0,0,.1); max-width: 720px; }
     .row { display: flex; gap: .75rem; }
     input[type="url"] { flex: 1; padding: .5rem .75rem; border: 1px solid #ccc;
                         border-radius: 6px; font-size: 1rem; }
     button { padding: .5rem 1.25rem; background: #d32323; color: #fff; border: none;
              border-radius: 6px; font-size: 1rem; cursor: pointer; white-space: nowrap; }
     button:hover { background: #b71c1c; }
+    button.secondary { background: #555; }
+    button.secondary:hover { background: #333; }
+    button.ghost { background: transparent; color: #d32323; border: 1px solid #d32323;
+                   padding: .3rem .75rem; font-size: .85rem; }
+    button.ghost:hover { background: #fdf0f0; }
     ul { list-style: none; }
-    li { padding: .5rem 0; border-bottom: 1px solid #eee; word-break: break-all; }
-    li:last-child { border-bottom: none; }
+    li.album-row { display: flex; align-items: center; gap: .75rem; padding: .6rem 0;
+                   border-bottom: 1px solid #eee; flex-wrap: wrap; }
+    li.album-row:last-child { border-bottom: none; }
+    .album-info { flex: 1; min-width: 0; }
+    .album-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .album-url { font-size: .8rem; color: #888; white-space: nowrap; overflow: hidden;
+                 text-overflow: ellipsis; }
+    .album-actions { display: flex; gap: .4rem; flex-shrink: 0; }
     a { color: #d32323; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .empty { color: #999; font-style: italic; }
@@ -42,12 +56,34 @@
     <h2>Tracked albums</h2>
     {% if albums %}
     <ul>
-      {% for url in albums %}
-      <li><a href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a></li>
+      {% for album in albums %}
+      <li class="album-row">
+        <div class="album-info">
+          <div class="album-name">
+            <a href="{{ album.url }}" target="_blank" rel="noopener">
+              {{ album.name if album.name else album.url }}
+            </a>
+          </div>
+          {% if album.name %}
+          <div class="album-url">{{ album.url }}</div>
+          {% endif %}
+        </div>
+        <div class="album-actions">
+          <form method="post" action="/refresh">
+            <input type="hidden" name="yelp_url" value="{{ album.url }}">
+            <button type="submit" class="ghost">Refresh</button>
+          </form>
+          <form method="post" action="/remove"
+                onsubmit="return confirm('Remove {{ album.name if album.name else 'this album' }} and delete its entries from the sheet?')">
+            <input type="hidden" name="yelp_url" value="{{ album.url }}">
+            <button type="submit" class="ghost" style="color:#888;border-color:#ccc;">Remove</button>
+          </form>
+        </div>
+      </li>
       {% endfor %}
     </ul>
     <form method="post" action="/scrape-all" style="margin-top:1rem;">
-      <button type="submit">Refresh all</button>
+      <button type="submit" class="secondary">Refresh all</button>
     </form>
     {% else %}
     <p class="empty">No albums tracked yet.</p>

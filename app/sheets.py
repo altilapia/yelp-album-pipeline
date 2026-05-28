@@ -128,6 +128,22 @@ def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:
     header = all_values[0]
     data_rows = all_values[1:]
 
+    # Remove blank data rows so manually-cleared rows don't leave gaps
+    blank_indices = [i for i, row in enumerate(data_rows) if not any(str(c).strip() for c in row)]
+    if blank_indices:
+        blank_set = set(blank_indices)
+        # Sheet row numbers: header is row 1, data starts at row 2 → offset by 2
+        ws.spreadsheet.batch_update({"requests": [
+            {"deleteDimension": {"range": {
+                "sheetId": ws.id,
+                "dimension": "ROWS",
+                "startIndex": i + 1,   # 0-indexed; +1 skips header row
+                "endIndex": i + 2,
+            }}}
+            for i in sorted(blank_indices, reverse=True)
+        ]})
+        data_rows = [row for i, row in enumerate(data_rows) if i not in blank_set]
+
     url_col = header.index("biz_url") if "biz_url" in header else 1
 
     # biz_url -> 1-based sheet row number
@@ -173,6 +189,44 @@ def _get_worksheet() -> Worksheet:
     client = gspread.service_account(filename=str(GOOGLE_CREDENTIALS_PATH))
     sh = client.open_by_key(GOOGLE_SHEET_ID)
     return sh.worksheet(GOOGLE_WORKSHEET_NAME)
+
+
+def remove_businesses(biz_urls: list[str]) -> int:
+    """Delete rows from the sheet whose biz_url matches any URL in the list.
+
+    Returns the number of rows deleted.
+    """
+    if not biz_urls:
+        return 0
+    ws = _get_worksheet()
+    url_set = set(biz_urls)
+    all_values = ws.get_all_values(value_render_option="FORMULA")
+    if not all_values:
+        return 0
+    header = all_values[0]
+    url_col = header.index("biz_url") if "biz_url" in header else 1
+    rows_to_delete = []
+    for i, row in enumerate(all_values[1:], start=2):
+        raw = row[url_col] if len(row) > url_col else ""
+        url = _extract_url(raw)
+        if url.startswith("/"):
+            url = "https://www.yelp.com" + url
+        if url in url_set:
+            rows_to_delete.append(i)
+    if not rows_to_delete:
+        return 0
+    # Batch delete from bottom to top so earlier row indices stay valid
+    requests = [
+        {"deleteDimension": {"range": {
+            "sheetId": ws.id,
+            "dimension": "ROWS",
+            "startIndex": row_idx - 1,
+            "endIndex": row_idx,
+        }}}
+        for row_idx in sorted(rows_to_delete, reverse=True)
+    ]
+    ws.spreadsheet.batch_update({"requests": requests})
+    return len(rows_to_delete)
 
 
 def upload(businesses: list[dict]) -> dict:

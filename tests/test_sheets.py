@@ -188,3 +188,53 @@ def test_no_header_written_when_header_already_exists():
     ws = _ws(_existing(MOTT))
     _upsert(ws, [MOTT])
     ws.insert_row.assert_not_called()
+
+
+# ── _upsert: blank row compaction ─────────────────────────────────────────────
+
+def _blank_row():
+    return [""] * len(COLUMNS)
+
+
+def _delete_requests(ws):
+    """Collect all deleteDimension requests from spreadsheet.batch_update calls."""
+    reqs = []
+    for call in ws.spreadsheet.batch_update.call_args_list:
+        body = call[0][0]
+        reqs.extend(r for r in body.get("requests", []) if "deleteDimension" in r)
+    return reqs
+
+
+def test_blank_data_rows_are_deleted():
+    ws = _ws([COLUMNS, _blank_row(), _existing(MOTT)[1]])
+    _upsert(ws, [])
+    assert len(_delete_requests(ws)) == 1
+
+
+def test_multiple_blank_rows_all_deleted():
+    ws = _ws([COLUMNS, _blank_row(), _existing(MOTT)[1], _blank_row(), _existing(MANGO)[1]])
+    _upsert(ws, [])
+    assert len(_delete_requests(ws)) == 2
+
+
+def test_upsert_targets_correct_row_after_blank_removal():
+    # header(row 1) + blank(row 2) + MOTT(row 3)
+    # After blank removal MOTT shifts to row 2
+    ws = _ws([COLUMNS, _blank_row(), _existing(MOTT)[1]])
+    result = _upsert(ws, [MOTT])
+    assert result == {"new": 0, "updated": 1}
+    updates = ws.batch_update.call_args[0][0]
+    assert updates[0]["range"] == "A2"
+
+
+def test_no_deletions_when_no_blank_rows():
+    ws = _ws(_existing(MOTT, MANGO))
+    _upsert(ws, [MOTT])
+    assert _delete_requests(ws) == []
+
+
+def test_all_blank_data_rows_removed_new_businesses_appended():
+    ws = _ws([COLUMNS, _blank_row(), _blank_row()])
+    result = _upsert(ws, [MOTT])
+    assert result == {"new": 1, "updated": 0}
+    assert len(_delete_requests(ws)) == 2

@@ -9,7 +9,8 @@ from app.pipeline import run_pipeline
 
 def run_all() -> None:
     """Run the pipeline for every tracked album URL."""
-    for url in storage.get_albums():
+    for album in storage.get_albums():
+        url = album["url"]
         try:
             run_pipeline(url)
         except Exception as exc:

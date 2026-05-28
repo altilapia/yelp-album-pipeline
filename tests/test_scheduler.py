@@ -6,15 +6,19 @@ from apscheduler.triggers.cron import CronTrigger
 
 from app.scheduler import create_scheduler, run_all
 
+ALBUMS = [
+    {"url": "https://url1.example.com", "name": "", "biz_urls": []},
+    {"url": "https://url2.example.com", "name": "", "biz_urls": []},
+]
+
 
 # ── run_all ───────────────────────────────────────────────────────────────────
 
 def test_run_all_calls_pipeline_for_each_url():
-    urls = ["https://url1.example.com", "https://url2.example.com"]
     with patch("app.scheduler.storage") as ms, patch("app.scheduler.run_pipeline") as mp:
-        ms.get_albums.return_value = urls
+        ms.get_albums.return_value = ALBUMS
         run_all()
-    mp.assert_has_calls([call(urls[0]), call(urls[1])])
+    mp.assert_has_calls([call(ALBUMS[0]["url"]), call(ALBUMS[1]["url"])])
     assert mp.call_count == 2
 
 
@@ -26,14 +30,12 @@ def test_run_all_does_nothing_when_no_albums():
 
 
 def test_run_all_continues_after_one_failure():
-    urls = ["https://fail.example.com", "https://ok.example.com"]
-
     def fail_first(url):
-        if url == urls[0]:
+        if url == ALBUMS[0]["url"]:
             raise RuntimeError("scrape blocked")
 
     with patch("app.scheduler.storage") as ms, patch("app.scheduler.run_pipeline", side_effect=fail_first) as mp:
-        ms.get_albums.return_value = urls
+        ms.get_albums.return_value = ALBUMS
         run_all()  # must not raise
 
     assert mp.call_count == 2
@@ -41,7 +43,7 @@ def test_run_all_continues_after_one_failure():
 
 def test_run_all_does_not_propagate_exception():
     with patch("app.scheduler.storage") as ms, patch("app.scheduler.run_pipeline", side_effect=Exception("boom")):
-        ms.get_albums.return_value = ["https://url.example.com"]
+        ms.get_albums.return_value = [{"url": "https://url.example.com", "name": "", "biz_urls": []}]
         run_all()  # must not raise
 
 
@@ -49,7 +51,6 @@ def test_run_all_does_not_propagate_exception():
 
 @pytest.fixture
 def scheduler():
-    # create_scheduler() configures but does not start the scheduler
     return create_scheduler()
 
 

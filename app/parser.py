@@ -58,5 +58,20 @@ def parse_album(html: str) -> list[dict]:
     return results
 
 
+def parse_album_name(html: str) -> str:
+    """Extract the album/collection name from rendered Yelp album HTML."""
+    soup = BeautifulSoup(html, "lxml")
+    og = soup.find("meta", property="og:title")
+    if og and og.get("content"):
+        return og["content"].strip()
+    h1 = soup.select_one("h1")
+    if h1:
+        return h1.get_text(strip=True)
+    if soup.title:
+        title = soup.title.string or ""
+        return title.split(" - ")[0].strip()
+    return ""
+
+
 def parse_album_file(path: str | Path) -> list[dict]:
     return parse_album(Path(path).read_text(encoding="utf-8"))
