@@ -164,6 +164,14 @@ yelp-album-tracker/
 └── README.md
 ```
 
+## Scheduler
+The app includes a built-in scheduler that automatically refreshes all tracked albums at a set time each day. The default run time is 3:00 AM and can be changed by updating `SCHEDULE_TIME` in your `.env` file:
+
+```env
+SCHEDULE_TIME=08:30
+```
+
+Note that the scheduler only fires if the server is actively running at the scheduled time — it is not a background system process. If the server is closed, the job will be skipped until the next scheduled run.
 ---
 
 ## Yelp scraping notes
