@@ -1,6 +1,6 @@
 # Yelp Album Tracker
 
-Track multiple Yelp collections in one place. Paste in a public album URL and the app scrapes every business — name, category, rating, review count, price, and location — writing it all to a Google Sheet and a local SQLite database. A built-in scheduler re-scrapes your albums daily, recording a snapshot on each run so you can track changes over time. A stats dashboard on the home page surfaces newly added businesses, the most-reviewed spot per album, top categories, price tier breakdowns, and cities with the most reviews. Future features may include time-series analysis of upward-trending businesses and expanded statistics!
+Track multiple Yelp collections in one place. Paste in a public album URL and the app scrapes every business' name, category, rating, review count, price, and location, writing it all to a Google Sheet and a local SQLite database. A built-in scheduler re-scrapes your albums daily, recording a snapshot on each run so you can track changes over time. A stats dashboard on the home page surfaces newly added businesses, the most-reviewed spot per album, top categories, price tier breakdowns, and cities with the most reviews. Future features may include time-series analysis of upward-trending businesses and expanded statistics!
 
 <img src="app.png" alt="App header" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
 
