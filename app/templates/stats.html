@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stats — Yelp Album Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem; }
+    nav { margin-bottom: 1.5rem; font-size: .9rem; }
+    nav a { color: #d32323; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1rem; margin-bottom: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: .05em; }
+    .card { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1); max-width: 720px; }
+    .meta { font-size: .8rem; color: #999; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th { text-align: left; padding: .4rem .6rem; border-bottom: 2px solid #eee;
+         font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: #888; }
+    td { padding: .5rem .6rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .biz-name a { color: #d32323; text-decoration: none; font-weight: 500; }
+    .biz-name a:hover { text-decoration: underline; }
+    .sub { font-size: .78rem; color: #888; margin-top: .15rem; }
+    .badge { display: inline-block; font-size: .75rem; font-weight: 600;
+             background: #e8f5e9; color: #2e7d32; border-radius: 4px;
+             padding: .1rem .4rem; }
+    .badge.new { background: #fff3e0; color: #e65100; }
+    .empty { color: #999; font-style: italic; font-size: .9rem; }
+    .notice { color: #888; font-size: .85rem; font-style: italic; }
+  </style>
+</head>
+<body>
+  <nav><a href="/">&larr; Back to albums</a></nav>
+  <h1>Stats</h1>
+  <p class="meta" style="margin-bottom:1.5rem;">{{ run_count }} run{{ 's' if run_count != 1 else '' }} recorded</p>
+
+  <!-- New businesses -->
+  <div class="card">
+    <h2>New businesses</h2>
+    {% if new_businesses %}
+    <table>
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Album</th>
+          <th>Rating</th>
+          <th>Added</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in new_businesses %}
+        <tr>
+          <td class="biz-name">
+            <a href="{{ b.biz_url }}" target="_blank" rel="noopener">{{ b.name }}</a>
+            <div class="sub">{{ b.category }}{% if b.city %} &middot; {{ b.city }}{% if b.state %}, {{ b.state }}{% endif %}{% endif %}</div>
+          </td>
+          <td>{{ b.album_names }}</td>
+          <td>{{ "%.1f"|format(b.rating) if b.rating else "—" }}</td>
+          <td>{{ b.first_seen[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No new businesses since the first run.</p>
+    {% endif %}
+  </div>
+
+  <!-- Top review growth -->
+  <div class="card">
+    <h2>Top 5 &mdash; review count increase</h2>
+    {% if run_count < 2 %}
+    <p class="notice">Need at least 2 runs to show review growth. Check back after the next daily refresh.</p>
+    {% elif top_review_growth %}
+    <table>
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Album</th>
+          <th>Rating</th>
+          <th>Reviews</th>
+          <th>Increase</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in top_review_growth %}
+        <tr>
+          <td class="biz-name">
+            <a href="{{ b.biz_url }}" target="_blank" rel="noopener">{{ b.name }}</a>
+            <div class="sub">{{ b.category }}{% if b.city %} &middot; {{ b.city }}{% if b.state %}, {{ b.state }}{% endif %}{% endif %}</div>
+          </td>
+          <td>{{ b.album_names }}</td>
+          <td>{{ "%.1f"|format(b.rating) if b.rating else "—" }}</td>
+          <td>{{ b.prev_reviews }} &rarr; {{ b.current_reviews }}</td>
+          <td><span class="badge">+{{ b.review_increase }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No review count changes detected between the last two runs.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>

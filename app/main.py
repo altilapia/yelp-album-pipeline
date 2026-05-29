@@ -6,13 +6,19 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app import storage
+from app.config import GOOGLE_SHEET_ID
+from app.database import init_db
 from app.pipeline import run_pipeline
 from app.scheduler import create_scheduler
 from app import sheets
+from app.storage import get_stats
+
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_db()
     scheduler = create_scheduler()
     scheduler.start()
     yield
@@ -28,7 +34,7 @@ def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"albums": storage.get_albums()},
+        context={"albums": storage.get_albums(), "sheet_url": SHEET_URL, **get_stats()},
     )
 
 
@@ -47,8 +53,16 @@ def refresh_one(background_tasks: BackgroundTasks, yelp_url: str = Form(...)):
 
 @app.post("/scrape-all")
 def scrape_all(background_tasks: BackgroundTasks):
-    for album in storage.get_albums():
-        background_tasks.add_task(run_pipeline, album["url"])
+    urls = [a["url"] for a in storage.get_albums()]
+
+    def _run_all():
+        for url in urls:
+            try:
+                run_pipeline(url)
+            except Exception as exc:
+                print(f"[scrape-all] failed for {url!r}: {exc}", flush=True)
+
+    background_tasks.add_task(_run_all)
     return RedirectResponse(url="/", status_code=303)
 
 

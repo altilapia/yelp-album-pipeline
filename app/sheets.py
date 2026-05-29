@@ -100,6 +100,7 @@ def _write_header(ws: Worksheet) -> None:
                     "startRowIndex": 1,
                     "startColumnIndex": 0,
                     "endColumnIndex": len(COLUMNS),
+                    "endRowIndex": 2000,
                 },
                 "rowProperties": {
                     "firstBandColor": _BAND_ODD,
@@ -182,7 +183,54 @@ def _upsert(ws: Worksheet, businesses: list[dict]) -> dict:
         "endIndex": len(COLUMNS),
     }}}]})
 
+    _ensure_banding(ws)
     return {"new": len(new_rows), "updated": len(updates)}
+
+
+def _ensure_banding(ws: Worksheet, row_count: int = 2000) -> None:
+    """Extend banding to row_count if it falls short (fixes sheets banded before enough rows existed)."""
+    sid = ws.id
+    try:
+        resp = ws.spreadsheet.client.request(
+            "GET",
+            f"https://sheets.googleapis.com/v4/spreadsheets/{ws.spreadsheet.id}",
+            params={"fields": "sheets(properties/sheetId,bandedRanges)"},
+        )
+        sheets_data = resp.json().get("sheets", [])
+    except Exception:
+        return
+
+    bands = []
+    for sheet in sheets_data:
+        if sheet.get("properties", {}).get("sheetId") == sid:
+            bands = sheet.get("bandedRanges", [])
+            break
+
+    if not bands:
+        return
+
+    end_row = bands[0].get("range", {}).get("endRowIndex", 0)
+    if end_row >= row_count:
+        return
+
+    requests = [{"deleteBanding": {"bandedRangeId": b["bandedRangeId"]}} for b in bands]
+    requests.append({"addBanding": {"bandedRange": {
+        "range": {
+            "sheetId": sid,
+            "startRowIndex": 1,
+            "startColumnIndex": 0,
+            "endColumnIndex": len(COLUMNS),
+            "endRowIndex": row_count,
+        },
+        "rowProperties": {
+            "firstBandColor": _BAND_ODD,
+            "secondBandColor": _BAND_EVEN,
+        },
+    }}})
+    try:
+        ws.spreadsheet.batch_update({"requests": requests})
+    except Exception:
+        pass
 
 
 def _get_worksheet() -> Worksheet:

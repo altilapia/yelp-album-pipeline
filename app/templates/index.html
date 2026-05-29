@@ -9,7 +9,8 @@
   {% endif %}
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem 1rem; }
+    .container { max-width: 760px; margin: 0 auto; }
     h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
     h2 { font-size: 1rem; margin-bottom: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: .05em; }
     .card { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;
@@ -37,10 +38,45 @@
     a { color: #d32323; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .empty { color: #999; font-style: italic; }
+    /* stats */
+    .summary-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .stat-pill { background: #f5f5f5; border-radius: 6px; padding: .5rem .9rem; font-size: .85rem; color: #555; }
+    .stat-pill strong { color: #222; font-size: 1rem; display: block; }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th { text-align: left; padding: .35rem .5rem; border-bottom: 2px solid #eee;
+         font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: #999; }
+    td { padding: .45rem .5rem; border-bottom: 1px solid #f2f2f2; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .biz-link { color: #d32323; text-decoration: none; font-weight: 500; }
+    .biz-link:hover { text-decoration: underline; }
+    .sub { font-size: .76rem; color: #aaa; margin-top: .1rem; }
+    .badge { display: inline-block; font-size: .75rem; font-weight: 600;
+             background: #e8f5e9; color: #2e7d32; border-radius: 4px; padding: .1rem .4rem; }
+    .notice { color: #aaa; font-size: .85rem; font-style: italic; }
+    .section-divider { border: none; border-top: 1px solid #eee; margin: 1.25rem 0; }
+    .page-header { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.5rem; }
+    .page-header h1 { margin-bottom: 0; }
+    .section-heading { display: flex; align-items: center; gap: .4rem; margin-bottom: .6rem; }
+    .section-heading svg { flex-shrink: 0; opacity: .6; }
   </style>
 </head>
 <body>
-  <h1>Yelp Album Tracker</h1>
+<div class="container">
+  <div class="page-header">
+    <!-- cutlery / restaurant icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="#d32323">
+      <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+    </svg>
+    <h1>Yelp Album Tracker</h1>
+    <a href="{{ sheet_url }}" target="_blank" rel="noopener" style="margin-left:auto;display:flex;align-items:center;gap:.35rem;font-size:.85rem;color:#d32323;text-decoration:none;white-space:nowrap;">
+      <!-- Google Sheets icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3h5v2h-5V6zm0 4h5v2h-5v-2zm0 4h5v2h-5v-2zM7 6h3v2H7V6zm0 4h3v2H7v-2zm0 4h3v2H7v-2z"/>
+      </svg>
+      Open Sheet
+    </a>
+  </div>
 
   <div class="card">
     <h2>Scrape an album</h2>
@@ -89,5 +125,202 @@
     <p class="empty">No albums tracked yet.</p>
     {% endif %}
   </div>
+
+  {% if total_businesses > 0 %}
+  <div class="card">
+    <h2>Stats</h2>
+
+    <div class="summary-row">
+      <div class="stat-pill"><strong>{{ total_businesses }}</strong>businesses tracked</div>
+      <div class="stat-pill"><strong>{{ run_count }}</strong>run{{ 's' if run_count != 1 else '' }} recorded</div>
+    </div>
+
+    <!-- New businesses -->
+    <div class="section-heading">
+      <!-- sparkle / new -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+      </svg>
+      <h2>Recently added</h2>
+    </div>
+    {% if new_businesses %}
+    <table>
+      <thead><tr><th>Business</th><th>Album</th><th>Rating</th><th>Reviews</th><th>Added</th></tr></thead>
+      <tbody>
+        {% for b in new_businesses %}
+        <tr>
+          <td>
+            <a class="biz-link" href="{{ b.biz_url }}" target="_blank" rel="noopener">{{ b.name }}</a>
+            <div class="sub">{{ b.category }}{% if b.city %} &middot; {{ b.city }}{% endif %}</div>
+          </td>
+          <td>{{ b.album_names }}</td>
+          <td>{{ "%.1f"|format(b.rating) if b.rating else "—" }}</td>
+          <td>{{ b.review_count if b.review_count else "—" }}</td>
+          <td>{{ b.first_seen[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No new businesses detected since the first run.</p>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Most reviewed per album -->
+    <div class="section-heading">
+      <!-- chat / reviews icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+      </svg>
+      <h2>Most reviewed per album</h2>
+    </div>
+    {% if most_reviewed_per_album %}
+    <table>
+      <thead><tr><th>Album</th><th>Business</th><th>Reviews</th><th>Rating</th></tr></thead>
+      <tbody>
+        {% for b in most_reviewed_per_album %}
+        <tr>
+          <td>{{ b.album_name }}</td>
+          <td>
+            <a class="biz-link" href="{{ b.biz_url }}" target="_blank" rel="noopener">{{ b.name }}</a>
+            <div class="sub">{{ b.category }}{% if b.city %} &middot; {{ b.city }}{% endif %}</div>
+          </td>
+          <td>{{ b.review_count }}</td>
+          <td>{{ "%.1f"|format(b.rating) if b.rating else "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No review data yet — run a refresh first.</p>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Category breakdown -->
+    <div class="section-heading">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M12 2l-5.5 9h11L12 2zm0 3.84L14.6 10h-5.2L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5S15.01 22 17.5 22 22 19.99 22 17.5 19.99 13 17.5 13zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/>
+      </svg>
+      <h2>Top categories</h2>
+    </div>
+    {% if top_categories %}
+    {% set max_count = top_categories[0].count %}
+    <table>
+      <thead><tr><th>#</th><th>Category</th><th>Businesses</th><th style="width:35%"></th></tr></thead>
+      <tbody>
+        {% for c in top_categories %}
+        <tr>
+          <td style="color:#bbb;font-size:.8rem;">{{ loop.index }}</td>
+          <td>{{ c.primary_category }}</td>
+          <td>{{ c.count }}</td>
+          <td>
+            <div style="background:#f5f5f5;border-radius:3px;height:8px;overflow:hidden;">
+              <div style="background:#d32323;height:100%;width:{{ (c.count / max_count * 100)|round }}%;border-radius:3px;"></div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No category data yet — run a refresh first.</p>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Price per album -->
+    <div class="section-heading">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+      </svg>
+      <h2>Price tier per album</h2>
+    </div>
+    {% if price_per_album %}
+    <table>
+      <thead><tr><th>Album</th><th>$</th><th>$$</th><th>$$$</th><th>$$$$</th><th>Avg tier</th></tr></thead>
+      <tbody>
+        {% for a in price_per_album %}
+        <tr>
+          <td>{{ a.album_name }}</td>
+          <td>{{ a.p1 or 0 }}</td>
+          <td>{{ a.p2 or 0 }}</td>
+          <td>{{ a.p3 or 0 }}</td>
+          <td>{{ a.p4 or 0 }}</td>
+          <td><strong>{{ a.avg_tier or "—" }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No price data yet — run a refresh first.</p>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Cities with most reviews -->
+    <div class="section-heading">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      <h2>Cities with most reviews</h2>
+    </div>
+    {% if top_cities %}
+    <table>
+      <thead><tr><th>City</th><th>Businesses</th><th>Total reviews</th><th>Avg per biz</th></tr></thead>
+      <tbody>
+        {% for c in top_cities %}
+        <tr>
+          <td>{{ c.city }}{% if c.state %}, {{ c.state }}{% endif %}</td>
+          <td>{{ c.business_count }}</td>
+          <td>{{ "{:,}".format(c.total_reviews) }}</td>
+          <td>{{ c.avg_reviews|int }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No city data yet — run a refresh first.</p>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <!-- Review count growth -->
+    <div class="section-heading">
+      <!-- trending up icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#d32323">
+        <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+      </svg>
+      <h2>Biggest review jumps (last two runs)</h2>
+    </div>
+    {% if run_count < 2 %}
+    <p class="notice">Need at least 2 runs to show growth. Check back after the next daily refresh.</p>
+    {% elif top_review_growth %}
+    <table>
+      <thead><tr><th>Business</th><th>Album</th><th>Rating</th><th>Reviews</th><th>Jump</th></tr></thead>
+      <tbody>
+        {% for b in top_review_growth %}
+        <tr>
+          <td>
+            <a class="biz-link" href="{{ b.biz_url }}" target="_blank" rel="noopener">{{ b.name }}</a>
+            <div class="sub">{{ b.category }}{% if b.city %} &middot; {{ b.city }}{% endif %}</div>
+          </td>
+          <td>{{ b.album_names }}</td>
+          <td>{{ "%.1f"|format(b.rating) if b.rating else "—" }}</td>
+          <td>{{ b.prev_reviews }} &rarr; {{ b.current_reviews }}</td>
+          <td><span class="badge">+{{ b.review_increase }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="notice">No review count changes between the last two runs.</p>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+</div>
 </body>
 </html>
