@@ -10,6 +10,9 @@ Track multiple Yelp collections in one place. Paste in a public album URL and th
 - Column headers persist across uploads and deletions
 - Duplicate businesses are automatically ignored
 - Entire albums can be refreshed or removed directly within the web interface
+- The SQLite database exists in (data/yelp_albums.db)
+- Open instances of the database file may cause the scraper to fail
+- The database persists locally, so closing and reopening the app won't affect snapshots or cause data loss
 
 ## Google sheet columns
 | Column | Description |
