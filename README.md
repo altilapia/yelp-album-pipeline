@@ -28,6 +28,7 @@ Turn your Yelp collections into a live Google Sheet. Paste in a public album URL
 ```
 POST /scrape  →  Playwright (scroll to load all)
               →  BeautifulSoup (extract fields)
+              →  SQLite (upsert businesses + record snapshot)
               →  gspread (upsert to Google Sheet)
 
 APScheduler   →  runs every tracked album daily at SCHEDULE_TIME
@@ -131,37 +132,40 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 ## Project layout
 
 ```
-yelp-album-tracker/
-├── app/
-│   ├── __init__.py
-│   ├── config.py          # loads .env
-│   ├── main.py            # FastAPI routes + lifespan
-│   ├── parser.py          # HTML → list of dicts
-│   ├── pipeline.py        # scraper → parser → sheets
-│   ├── scheduler.py       # APScheduler daily job
-│   ├── scraper.py         # Playwright: URL → HTML
-│   ├── sheets.py          # dicts → Google Sheet (upsert)
-│   ├── storage.py         # tracked-album URLs (JSON file)
-│   └── templates/
-│       └── index.html
-├── credentials/           # gitignored
-│   └── service-account.json
-├── tests/
-│   ├── fixtures/
-│   │   └── sample_album.html
-│   ├── test_main.py
-│   ├── test_parser.py
-│   ├── test_pipeline.py
-│   ├── test_scheduler.py
-│   ├── test_scraper.py
-│   ├── test_sheets.py
-│   └── test_storage.py
-├── data/                  # gitignored, created on first run
-│   └── albums.json
-├── .env                   # gitignored
-├── .env.example
-├── requirements.txt
-└── README.md
+  yelp-album-tracker/
+  ├── app/
+  │   ├── __init__.py
+  │   ├── config.py          # loads .env
+  │   ├── database.py        # SQLite schema, connection factory, JSON migration
+  │   ├── main.py            # FastAPI routes + lifespan
+  │   ├── parser.py          # HTML → list of dicts
+  │   ├── pipeline.py        # scraper → parser → SQLite → sheets
+  │   ├── scheduler.py       # APScheduler daily job
+  │   ├── scraper.py         # Playwright: URL → HTML
+  │   ├── sheets.py          # dicts → Google Sheet (upsert)
+  │   ├── storage.py         # album + business CRUD, snapshot writes, stats queries
+  │   └── templates/
+  │       └── index.html     # main UI + inline stats dashboard
+  ├── credentials/           # gitignored
+  │   └── service-account.json
+  ├── tests/
+  │   ├── fixtures/
+  │   │   └── sample_album.html
+  │   ├── conftest.py        # redirects DB to tmp path for all tests
+  │   ├── test_main.py
+  │   ├── test_parser.py
+  │   ├── test_pipeline.py
+  │   ├── test_scheduler.py
+  │   ├── test_scraper.py
+  │   ├── test_sheets.py
+  │   └── test_storage.py
+  ├── data/                  # gitignored, created on first run
+  │   ├── albums.json        # legacy — auto-migrated to SQLite on first startup
+  │   └── yelp_albums.db     # SQLite database (albums, businesses, snapshots)
+  ├── .env                   # gitignored
+  ├── .env.example
+  ├── requirements.txt
+  └── README.md
 ```
 
 ## Scheduler
@@ -174,6 +178,16 @@ SCHEDULE_TIME=08:30
 Note that the scheduler only fires if the server is actively running at the scheduled time — it is not a background system process. If the server is closed, the job will be skipped until the next scheduled run.
 ---
 
+## Stats dashboard
+Visit [http://localhost:8000/stats](http://localhost:8000/stats) for a live 
+dashboard of your tracked albums, including:
+
+- 10 most recently added businesses
+- Most-reviewed business per album
+- Top categories across all albums
+- Price tier breakdown by album
+
+  
 ## Yelp scraping notes
 
 - Albums use infinite scroll. To ensure full search of each album, the scraper scrolls until the business count stops growing for 3 consecutive passes.
