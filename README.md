@@ -2,7 +2,7 @@
 
 Turn your Yelp collections into a live Google Sheet. Paste in a public album URL and the tool will scrape each business, making it easier to keep track of places you want to visit next.
 
-<img src="app.png" alt="Sample of Google Sheet" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
+<img src="app.png" alt="App header" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
 
 ## Things to know
 
@@ -186,6 +186,8 @@ dashboard of your tracked albums, including:
 - Most-reviewed business per album
 - Top categories across all albums
 - Price tier breakdown by album
+
+<img src="stats_1.png" alt="Stats section #1" width=500> <img src="stats_2.png" alt="Stats section #2" width=500>
 
   
 ## Yelp scraping notes
