@@ -1,8 +1,27 @@
 # Yelp Album Tracker
 
-Scrapes all businesses from a public Yelp album (collection) and writes them to a Google Sheet. A small FastAPI web app lets you add albums through a browser form.
+Turn your Yelp collections into a live Google Sheet. Paste in a public album URL and the tool will scrape each business, making it easier to keep track of places you want to visit next.
 
-<img src="image.png" alt="Sample of Google Sheet" width=500>
+<img src="app.png" alt="Sample of Google Sheet" width=500> <img src="sheet_ex.png" alt="Sample of Google Sheet" width=500>
+
+## Things to know
+
+- The Google Sheet will retain its information regardless of whether the application is open
+- Column headers persist across uploads and deletions
+- Duplicate businesses are automatically ignored
+- Entire albums can be refreshed or removed directly within the web interface
+
+## Google sheet columns
+| Column | Description |
+|---|---|
+| **name** | Business name |
+| **biz_url** | Yelp business link |
+| **category** | Business category |
+| **rating** | Average star rating (rounded to nearest 0.5) |
+| **review_count** | Total number of reviews |
+| **price** | Price range (e.g. $$) |
+| **city** | City |
+| **state** | State |
 
 ## How it works
 
@@ -13,8 +32,6 @@ POST /scrape  →  Playwright (scroll to load all)
 
 APScheduler   →  runs every tracked album daily at SCHEDULE_TIME
 ```
-
-Fields written per business: `name`, `biz_url`, `category`, `rating`, `review_count`, `price`, `neighborhood`, `first_seen`, `last_seen`.
 
 ---
 
@@ -110,25 +127,6 @@ Paste a Yelp album URL into the form and click **Scrape & sync**. A Chromium win
 
 ---
 
-## Things to know
-
-- Multiple albums can be uploaded, one at a time
-- The Google Sheet will retain its information regardless of whether the application is open
-- If you would like to repopulate the sheet, erase the contents and re-upload album links
-- The header column will persist with each link upload and file erasure 
-- Duplicate businesses will be ignored
-
-## Google sheet contents
-
-**name** - Business name  
-**biz_url** - Business Yelp Link  
-**category** - Business  
-**rating** - Average star rating (rounded to nearest 0.5 interval)  
-**review_count** - Number of business reviews  
-**price** - Dollar signs indicating expense rating $$  
-**city** - City of business  
-**state** - State of business  
-
 
 ## Project layout
 
@@ -166,10 +164,18 @@ yelp-album-tracker/
 └── README.md
 ```
 
+## Scheduler
+The app includes a built-in scheduler that automatically refreshes all tracked albums at a set time each day. The default run time is 3:00 AM and can be changed by updating `SCHEDULE_TIME` in your `.env` file:
+
+```env
+SCHEDULE_TIME=08:30
+```
+
+Note that the scheduler only fires if the server is actively running at the scheduled time — it is not a background system process. If the server is closed, the job will be skipped until the next scheduled run.
 ---
 
 ## Yelp scraping notes
 
-- Albums use infinite scroll — the scraper scrolls until the business count stops growing for 3 consecutive passes.
+- Albums use infinite scroll. To ensure full search of each album, the scraper scrolls until the business count stops growing for 3 consecutive passes.
 - The browser launches **non-headless** by default to reduce bot-detection risk. Expect occasional CAPTCHAs on large or frequently-scraped albums.
 - If Yelp starts blocking: try adding a longer `scroll_pause` in `scraper.py`, or look into [playwright-stealth](https://github.com/AtuboDad/playwright_stealth) and residential proxies as escalation options.
